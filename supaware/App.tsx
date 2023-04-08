@@ -1,4 +1,4 @@
-import React, { createContext, useState, useMemo } from 'react';
+import React, { createContext, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -11,24 +11,29 @@ import RegisterPage from './pages/RegisterPage';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-export const AuthContext = createContext(null);
+export const AuthContext = createContext<{
+  signIn: (token: string) => void;
+  signOut: () => void;
+}>({
+  signIn: () => { },
+  signOut: () => { },
+});
 
 const App: React.FC = () => {
-  const [userToken, setUserToken] = useState(null);
-
-  const authContext = useMemo(() => {
-    return {
-      signIn: (token) => {
-        setUserToken(token);
-      },
-      signOut: () => {
-        setUserToken(null);
-      },
-    };
-  }, []);
+  // userToken should be a string when the user is logged in, and null when they are not
+  const [userToken, setUserToken] = useState<string | null>(null);
 
   return (
-    <AuthContext.Provider value={authContext}>
+    <AuthContext.Provider
+      value={{
+        signIn: (token: string) => {
+          setUserToken(token);
+        },
+        signOut: () => {
+          setUserToken(null);
+        },
+      }}
+    >
       <NavigationContainer>
         {userToken == null ? (
           <Stack.Navigator>
