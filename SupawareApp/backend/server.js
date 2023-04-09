@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -9,20 +8,29 @@ dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Mock user data
 const users = [];
 
 // Register route
-app.post('/register', async (req, res) => {
+app.post('/register', async (req, res, next) => {
     const { username, password } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = { username, password: hashedPassword };
-    users.push(newUser);
+    const existingUser = users.find((u) => u.username === username);
+    if (existingUser) {
+        return res.status(400).json({ message: 'Username already exists' });
+    }
 
-    res.status(201).json({ message: 'User registered successfully' });
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = { username, password: hashedPassword };
+        users.push(newUser);
+
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (err) {
+        next(err);
+    }
 });
 
 // Login route
@@ -41,6 +49,12 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user.username }, process.env.JWT_SECRET);
     res.json({ token });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'An error occurred' });
 });
 
 const PORT = process.env.PORT || 3001;

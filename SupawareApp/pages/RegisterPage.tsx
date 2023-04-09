@@ -3,7 +3,11 @@ import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@env';
 
-const RegisterPage: React.FC = () => {
+interface RegisterPageProps {
+    onRegisterSuccess: () => void;
+}
+
+const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -13,7 +17,7 @@ const RegisterPage: React.FC = () => {
                 username,
                 password,
             });
-            // Navigate to the Login page after successful registration
+            onRegisterSuccess();
         } catch (error) {
             console.error(error);
         }

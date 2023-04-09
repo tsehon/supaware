@@ -20,7 +20,6 @@ export const AuthContext = createContext<{
 });
 
 const App: React.FC = () => {
-  // userToken should be a string when the user is logged in, and null when they are not
   const [userToken, setUserToken] = useState<string | null>(null);
 
   return (
@@ -38,7 +37,18 @@ const App: React.FC = () => {
         {userToken == null ? (
           <Stack.Navigator>
             <Stack.Screen name="Login" component={LoginPage} />
-            <Stack.Screen name="Register" component={RegisterPage} />
+            <Stack.Screen
+              name="Register"
+              options={({ navigation }) => ({
+                headerTitle: 'Register',
+              })}
+              children={(props) => (
+                <RegisterPage
+                  {...props}
+                  onRegisterSuccess={() => props.navigation.navigate('Login')}
+                />
+              )}
+            />
           </Stack.Navigator>
         ) : (
           <Tab.Navigator>
