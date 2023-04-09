@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from 'react-native-dotenv';
 
 interface RegisterPageProps {
     onRegisterSuccess: () => void;
