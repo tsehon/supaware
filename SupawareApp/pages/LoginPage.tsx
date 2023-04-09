@@ -4,7 +4,7 @@ import axios from 'axios';
 import { API_URL } from 'react-native-dotenv';
 import { AuthContext } from '../App';
 
-const LoginPage = () => {
+const LoginPage = ({ navigation }) => {
     const { signIn } = useContext(AuthContext);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -36,6 +36,10 @@ const LoginPage = () => {
                 secureTextEntry
             />
             <Button title="Login" onPress={loginUser} />
+            <Button
+                title="Don't have an account? Register"
+                onPress={() => navigation.navigate('Register')}
+            />
         </View>
     );
 };
