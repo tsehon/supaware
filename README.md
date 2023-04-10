@@ -10,6 +10,7 @@ npx react-native start
 
 In another terminal tab and issue:
 ```
+cd backend
 node server.js
 ```
 
