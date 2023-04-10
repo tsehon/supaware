@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import axios from 'axios';
-import { API_URL } from 'react-native-dotenv';
 
 interface RegisterPageProps {
     onRegisterSuccess: () => void;
@@ -13,7 +12,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess }) => {
 
     const registerUser = async () => {
         try {
-            await axios.post(`${API_URL}/register`, {
+            await axios.post(`/register`, {
                 username,
                 password,
             });

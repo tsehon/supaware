@@ -1,7 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import axios from 'axios';
-import { API_URL } from 'react-native-dotenv';
 import { AuthContext } from '../App';
 
 const LoginPage = ({ navigation }) => {
@@ -11,7 +10,7 @@ const LoginPage = ({ navigation }) => {
 
     const loginUser = async () => {
         try {
-            const response = await axios.post(`${API_URL}/login`, {
+            const response = await axios.post(`/login`, {
                 username,
                 password,
             });

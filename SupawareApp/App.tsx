@@ -19,6 +19,10 @@ export const AuthContext = createContext<{
   signOut: () => { },
 });
 
+import axios from 'axios';
+import { API_URL } from 'react-native-dotenv';
+axios.defaults.baseURL = API_URL;
+
 const App: React.FC = () => {
   const [userToken, setUserToken] = useState<string | null>(null);
 
