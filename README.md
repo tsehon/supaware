@@ -1,2 +1,2 @@
 # supaware
-Supaware provides a comprehensive and personalized approach to health tracking and tips, leveraging wearable integrations to empower users to take control of their health and make positive changes to their lifestyle.
+Supaware is designed to work seamlessly with wearable devices, such as fitness trackers or smartwatches, to collect and analyze health data in real-time.
