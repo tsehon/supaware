@@ -8,13 +8,13 @@ yarn
 npx react-native start
 ```
 
-In another terminal tab and issue:
+In another terminal tab, issue:
 ```
 cd backend
 node server.js
 ```
 
-In another terminal tab and issue:
+In another terminal tab, issue:
 ```
 npx pod-install ios
 npx react-native run-ios
