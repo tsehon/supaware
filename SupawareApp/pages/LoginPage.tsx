@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import axios from 'axios';
-import { AuthContext } from '../App';
+import { AuthContext } from '../contexts/AuthContext';
 
 const LoginPage = ({ navigation }) => {
     const { signIn } = useContext(AuthContext);
@@ -14,7 +14,7 @@ const LoginPage = ({ navigation }) => {
                 username,
                 password,
             });
-            signIn(response.data.token);
+            await signIn(response.data.token);
         } catch (error) {
             console.error(error);
         }
