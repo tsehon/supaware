@@ -20,7 +20,8 @@ export const AuthContext = createContext<{
 });
 
 import axios from 'axios';
-import { API_URL } from 'react-native-dotenv';
+import { API_URL } from '@env';
+console.log(API_URL);
 axios.defaults.baseURL = API_URL;
 
 const App: React.FC = () => {

@@ -2,10 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const dotenv = require('dotenv');
-
-dotenv.config();
-
+const dotenv = require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -19,18 +16,17 @@ const client = new MongoClient(uri, {
     serverApi: ServerApiVersion.v1
 });
 
-console.log('Connecting to MongoDB...');
-
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
+        console.log('Connecting to MongoDB...');
         await client.connect();
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
+    } catch (err) {
+        console.log("Error connecting to MongoDB: " + err)
+        console.log(err.stack);
     }
 }
 
@@ -88,6 +84,7 @@ app.listen(PORT, () => {
 
 // Close the connection when the server is stopped
 process.on('SIGINT', () => {
+    console.log('\nClosing MongoDB connection...');
     client.close();
     process.exit();
 });
