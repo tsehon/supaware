@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useReducer, useEffect, useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -12,40 +12,22 @@ import SettingsNavigator from './pages/SettingsNavigator';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 
+import AuthProvider, { AuthContext } from './contexts/AuthContext';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-export const AuthContext = createContext<{
-  signIn: (token: string) => void;
-  signOut: () => void;
-}>({
-  signIn: () => { },
-  signOut: () => { },
-});
-
 import axios from 'axios';
 import { API_URL } from '@env';
-console.log(API_URL);
 axios.defaults.baseURL = API_URL;
 
 const App: React.FC = () => {
-  const [userToken, setUserToken] = useState("");
+  const { userToken } = useContext(AuthContext);
 
   return (
-    <AuthContext.Provider
-      value={{
-        signIn: (token: string) => {
-          setUserToken(token);
-          AsyncStorage.setItem('userToken', token);
-        },
-        signOut: () => {
-          setUserToken("");
-          AsyncStorage.removeItem('userToken');
-        },
-      }}
-    >
+    <AuthProvider>
       <NavigationContainer>
-        {userToken == "" ? (
+        { userToken ? (
           <Stack.Navigator>
             <Stack.Screen name="Login" component={LoginPage} />
             <Stack.Screen
@@ -87,7 +69,7 @@ const App: React.FC = () => {
           </Tab.Navigator>
         )}
       </NavigationContainer>
-    </AuthContext.Provider>
+    </AuthProvider>
   );
 };
 

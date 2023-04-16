@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Linking } from 'react-native';
 import axios from 'axios';
 import { OURA_CLIENT_ID, OURA_CLIENT_SECRET } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import jwtDecode from 'jwt-decode';
 
 const handleOpenURL = async (event) => {
     // Extract the authorization code from the URL
@@ -21,17 +20,11 @@ const handleOpenURL = async (event) => {
                 redirect_uri: 'supaware://oura-callback',
             });
 
-            // Save the access token, refresh token, and expiration time
+            // Save the access token, refresh token, and expiration time in MongoDB and AsyncStorage
             const { access_token, refresh_token, expires_in } = response.data;
-            // ... save tokens and expiration time, e.g., in AsyncStorage or another storage
-            const userToken = AsyncStorage.getItem('usertoken');
-            const username = jwtDecode(userToken).username;
-            axios.post('/store_tokens', {
-                username,
-                access_token,
-                refresh_token,
-                expires_in,
-            });
+            AsyncStorage.setItem('oura-accessToken', access_token);
+            AsyncStorage.setItem('oura-refreshToken', refresh_token);
+            AsyncStorage.setItem('oura-expiry', expires_in);
 
             // Use the access token to fetch data from the Oura API
             // ...
