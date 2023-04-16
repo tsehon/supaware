@@ -18,6 +18,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 import axios from 'axios';
+// @ts-ignore
 import { API_URL } from '@env';
 axios.defaults.baseURL = API_URL;
 
@@ -27,7 +28,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <NavigationContainer>
-        { userToken ? (
+        {userToken ? (
           <Stack.Navigator>
             <Stack.Screen name="Login" component={LoginPage} />
             <Stack.Screen

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import AuthContext from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 
 
 const AccountPage: React.FC = () => {

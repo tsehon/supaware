@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { Linking } from 'react-native';
 import axios from 'axios';
+// @ts-ignore
 import { OURA_CLIENT_ID, OURA_CLIENT_SECRET } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
