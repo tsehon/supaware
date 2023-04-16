@@ -3,8 +3,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import jwtDecode from 'jwt-decode';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import TabBarIcon from './components/TabBarIcon';
+
 import HomePage from './pages/HomePage';
-import SettingsPage from './pages/SettingsPage';
+import SettingsNavigator from './pages/SettingsNavigator';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 
@@ -25,21 +29,23 @@ console.log(API_URL);
 axios.defaults.baseURL = API_URL;
 
 const App: React.FC = () => {
-  const [userToken, setUserToken] = useState<string | null>(null);
+  const [userToken, setUserToken] = useState("");
 
   return (
     <AuthContext.Provider
       value={{
         signIn: (token: string) => {
           setUserToken(token);
+          AsyncStorage.setItem('userToken', token);
         },
         signOut: () => {
-          setUserToken(null);
+          setUserToken("");
+          AsyncStorage.removeItem('userToken');
         },
       }}
     >
       <NavigationContainer>
-        {userToken == null ? (
+        {userToken == "" ? (
           <Stack.Navigator>
             <Stack.Screen name="Login" component={LoginPage} />
             <Stack.Screen
@@ -56,9 +62,28 @@ const App: React.FC = () => {
             />
           </Stack.Navigator>
         ) : (
-          <Tab.Navigator>
-            <Tab.Screen name="Home" component={HomePage} />
-            <Tab.Screen name="Settings" component={SettingsPage} />
+          <Tab.Navigator
+            screenOptions={{
+              headerShown: false,
+            }}
+            initialRouteName="Home"
+          >
+            <Tab.Screen name="Home"
+              component={HomePage}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabBarIcon focused={focused} iconName="home" />
+                ),
+              }}
+            />
+            <Tab.Screen name="SettingsNavigator"
+              component={SettingsNavigator}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <TabBarIcon focused={focused} iconName="settings" />
+                ),
+              }}
+            />
           </Tab.Navigator>
         )}
       </NavigationContainer>
