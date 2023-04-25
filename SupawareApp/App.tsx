@@ -5,7 +5,7 @@ import AppNav from './pages/AppNav';
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AppNav/>
+      <AppNav />
     </AuthProvider>
   );
 };

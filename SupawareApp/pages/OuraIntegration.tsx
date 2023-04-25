@@ -5,7 +5,32 @@ import axios from 'axios';
 import { OURA_CLIENT_ID, OURA_CLIENT_SECRET } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const handleOpenURL = async (event) => {
+const authorizeOura = async (userToken: string) => {
+    const response = axios.post('https://api.ouraring.com/oauth/authorize', {
+        response_type: 'code',
+        client_id: OURA_CLIENT_ID,
+        redirect_uri: 'supaware://oura-callback',
+        state: userToken,
+    });
+};
+
+export const handleOuraAuthentication = async (event: any) => {
+    if (event.error === 'access_denied') {
+        console.error('Error authorizing Oura:', event.error_description);
+        return;
+    }
+
+    const res = await axios.post('/oura/authorize', {
+        code: event.code,
+        scope: event.scope,
+        userToken: event.state,
+    });
+
+
+}
+
+
+const handleOpenURL = async () => {
     // Extract the authorization code from the URL
     const url = new URL(event.url);
     const authorizationCode = url.searchParams.get('code');
@@ -35,13 +60,3 @@ const handleOpenURL = async (event) => {
         }
     }
 };
-
-useEffect(() => {
-    // Add the listener when the component mounts
-    Linking.addEventListener('url', handleOpenURL);
-
-    // Remove the listener when the component unmounts
-    return () => {
-        Linking.removeEventListener('url', handleOpenURL);
-    };
-}, []);
