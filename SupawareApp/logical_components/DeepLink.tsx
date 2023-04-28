@@ -1,11 +1,11 @@
-import { handleOuraAuthentication } from '../pages/OuraIntegration';
+import { ouraAuthCallback } from '../devices/oura/OuraIntegration';
 
 type CallbacksType = {
     [key: string]: (event: any) => Promise<void>;
 };
 
 const callbacks: CallbacksType = {
-    'supaware://oura-callback': handleOuraAuthentication,
+    'supaware://oura-callback': ouraAuthCallback,
 }
 
 const handleDeepLink = (event: any) => {

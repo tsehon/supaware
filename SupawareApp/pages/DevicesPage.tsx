@@ -3,7 +3,7 @@ import { View, Text, Button } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const devices = [
-    { title: 'Oura', route: 'OuraIntegration.tsx' },
+    { title: 'Oura', auth: 'OuraIntegration.tsx' },
 ];
 
 const Devices: React.FC = () => {

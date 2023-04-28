@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { AuthContext } from '../contexts/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginPage = ({ navigation }) => {
     const { signIn } = useContext(AuthContext);
@@ -15,6 +16,10 @@ const LoginPage = ({ navigation }) => {
                 password,
             });
             await signIn(response.data.token);
+            for (const device of response.data.devices) {
+                const key = `${device}-connected`;
+                await AsyncStorage.setItem(key, "oura");
+            }
         } catch (error) {
             console.error(error);
         }

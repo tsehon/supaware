@@ -40,7 +40,7 @@ type AuthProviderProps = {
 
 const clearDeviceInfo = async () => {
     const deviceAccessInfo = await AsyncStorage.getAllKeys().then((keys) => {
-        return keys.filter((key) => (key.includes('accessToken') || key.includes('refreshToken') || key.includes('expiry')));
+        return keys.filter((key) => (key.includes('-accessToken') || key.includes('-refreshToken') || key.includes('-expiry') || key.includes('-connected')));
     });
     AsyncStorage.multiRemove(deviceAccessInfo);
 };

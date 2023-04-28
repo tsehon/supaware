@@ -32,6 +32,7 @@ async function run() {
 
 // Access the "users" collection in your database
 const usersCollection = client.db('supaware-db').collection('users');
+const tokensCollection = client.db('supaware-db').collection('tokens');
 
 // Register route
 app.post('/register', async (req, res, next) => {
@@ -68,9 +69,69 @@ app.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET);
-    res.json({ token });
+
+    // fetch device information from MongoDB
+    const device_tokens = tokensCollection.find({ userId: user._id });
+    const devices = device_tokens.accountType.toArray();
+
+    res.json({ token, devices });
 });
 
+// Oura API route
+app.post('/oura/authorize', async (req, res) => {
+    const { code, scope, userToken, redirect_uri, client_id, client_secret } = req.body;
+    const grant_type = 'authorization_code';
+
+    const response = await fetch('https://api.ouraring.com/oauth/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Encoding': 'utf-8',
+        },
+        body: `grant_type=${grant_type}&code=${code}&redirect_uri=${redirect_uri}&client_id=${client_id}&client_secret=${client_secret}`
+    });
+
+    const data = await response.json();
+
+    const username = jwt.verify(userToken, process.env.JWT_SECRET).username;
+    const user = await usersCollection.findOne({ username });
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    // get the time of token expiry
+    const currentTime = Math.floor(Date.now() / 1000);
+    const expirationTime = currentTime + data.expires_in;
+    const expiration = new Date(expirationTime);
+
+    // Store the data in MongoDB
+    const newToken = {
+        userId: user._id,
+        accountType: "oura",
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiry: expiration,
+        scope: scope,
+    }
+
+    await tokensCollection.insertOne(newToken);
+    res.json(data, expiration);
+});
+
+app.get('/devices', async (req, res) => {
+    const username = jwt.verify(req.headers.authorization, process.env.JWT_SECRET).username;
+    const user = await usersCollection.findOne({ username });
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    const device_tokens = tokensCollection.find({ userId: user._id });
+    const devices = device_tokens.accountType.toArray();
+
+    res.json(devices);
+});
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
