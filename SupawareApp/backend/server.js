@@ -78,25 +78,27 @@ app.post('/login', async (req, res) => {
 
 app.post('/oura/authrequest', (req, res) => {
     console.log("POST /oura/authrequest");
-    const { client_id, state } = req.body;
+    const { client_id, state, auth_url, redirect_uri } = req.body;
 
     const queryParams = querystring.stringify({
         response_type: 'code',
-        redirect_uri: 'supaware://oura-callback',
+        redirect_uri: redirect_uri,
         client_id: client_id,
         state: state,
     });
 
-    res.redirect(`https://api.ouraring.com/oauth/authorize?${queryParams}`);
+    const redirectUrl = `${auth_url}?${queryParams}`;
+    return res.status(200).json({ redirectUrl });
 });
+
 
 // Oura API route
 app.post('/oura/authorize', async (req, res) => {
     console.log("POST /oura/authorize");
-    const { code, scope, userToken, redirect_uri, client_id, client_secret } = req.body;
+    const { code, scope, userToken, redirect_uri, client_id, client_secret, token_url } = req.body;
     const grant_type = 'authorization_code';
 
-    const response = await fetch('https://api.ouraring.com/oauth/token', {
+    const response = await fetch(token_url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -106,6 +108,7 @@ app.post('/oura/authorize', async (req, res) => {
     });
 
     const data = await response.json();
+    console.log("- Data: " + data);
 
     const username = jwt.verify(userToken, process.env.JWT_SECRET).username;
     const user = await usersCollection.findOne({ username });
@@ -153,6 +156,13 @@ app.get('/devices', async (req, res) => {
 
     const devices = device_types.toArray();
     res.json(devices);
+});
+
+// catch-all
+app.all('*', (req, res) => {
+    console.log("CATCH-ALL")
+    console.log('Request URL:', req.url);
+    res.status(404).send('Not Found');
 });
 
 // Error handling middleware

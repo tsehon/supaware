@@ -21,6 +21,7 @@ const callbacks: CallbacksType = {
 }
 
 const handleDeepLink = (event: any) => {
+    console.log('Deep link event:', event);
     const url: string = event.url;
 
     if (url in callbacks) {

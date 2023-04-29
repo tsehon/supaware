@@ -6,8 +6,6 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const HomePage: React.FC = () => {
     const { userToken } = useContext(AuthContext);
-    console.log(userToken);
-
     const [devices, setDevices] = useState([]);
 
     useEffect(() => {
