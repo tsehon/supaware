@@ -128,7 +128,7 @@ app.get('/devices', async (req, res) => {
     }
 
     const device_tokens = tokensCollection.find({ userId: user._id });
-    const devices = device_tokens.accountType.toArray();
+    const devices = await device_tokens.accountType.toArray();
 
     res.json(devices);
 });
