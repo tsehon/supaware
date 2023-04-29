@@ -3,11 +3,12 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv').config();
+const querystring = require('querystring');
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
+// MongoDB
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, {
@@ -15,6 +16,10 @@ const client = new MongoClient(uri, {
     useUnifiedTopology: true,
     serverApi: ServerApiVersion.v1
 });
+
+// Database collections
+const usersCollection = client.db('supaware-db').collection('users');
+const tokensCollection = client.db('supaware-db').collection('tokens');
 
 async function run() {
     try {
@@ -30,12 +35,9 @@ async function run() {
     }
 }
 
-// Access the "users" collection in your database
-const usersCollection = client.db('supaware-db').collection('users');
-const tokensCollection = client.db('supaware-db').collection('tokens');
-
 // Register route
 app.post('/register', async (req, res, next) => {
+    console.log("POST /register");
     const { username, password } = req.body;
 
     const existingUser = await usersCollection.findOne({ username });
@@ -56,6 +58,7 @@ app.post('/register', async (req, res, next) => {
 
 // Login route
 app.post('/login', async (req, res) => {
+    console.log("POST /login");
     const { username, password } = req.body;
 
     const user = await usersCollection.findOne({ username });
@@ -70,15 +73,26 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET);
 
-    // fetch device information from MongoDB
-    const device_tokens = tokensCollection.find({ userId: user._id });
-    const devices = device_tokens.accountType.toArray();
+    res.json({ token });
+});
 
-    res.json({ token, devices });
+app.post('/oura/authrequest', (req, res) => {
+    console.log("POST /oura/authrequest");
+    const { client_id, state } = req.body;
+
+    const queryParams = querystring.stringify({
+        response_type: 'code',
+        redirect_uri: 'supaware://oura-callback',
+        client_id: client_id,
+        state: state,
+    });
+
+    res.redirect(`https://api.ouraring.com/oauth/authorize?${queryParams}`);
 });
 
 // Oura API route
 app.post('/oura/authorize', async (req, res) => {
+    console.log("POST /oura/authorize");
     const { code, scope, userToken, redirect_uri, client_id, client_secret } = req.body;
     const grant_type = 'authorization_code';
 
@@ -120,6 +134,8 @@ app.post('/oura/authorize', async (req, res) => {
 });
 
 app.get('/devices', async (req, res) => {
+    console.log("GET /devices");
+
     const username = jwt.verify(req.headers.authorization, process.env.JWT_SECRET).username;
     const user = await usersCollection.findOne({ username });
 
@@ -128,10 +144,17 @@ app.get('/devices', async (req, res) => {
     }
 
     const device_tokens = tokensCollection.find({ userId: user._id });
-    const devices = await device_tokens.accountType.toArray();
+    const device_types = await device_tokens.accountType;
 
+    if (!device_types) {
+        console.log("- No devices found");
+        return [];
+    }
+
+    const devices = device_types.toArray();
     res.json(devices);
 });
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

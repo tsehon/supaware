@@ -1,10 +1,11 @@
 import { Oura } from "../devices/oura/Oura";
+import axios from "axios";
 
 export default interface Device {
     name: string;
     image: any;
     authRequest: (userToken: string) => void;
-    authCallback: (event: any) => Promise<void>;
+    authCallback: (event: any) => void;
     refresh(): void;
 }
 
@@ -15,6 +16,8 @@ export const deviceMapping: Record<string, DeviceConstructor> = {
 };
 
 export function createDevice(deviceType: string): Device | null {
+    deviceType = deviceType.toLowerCase();
+
     const DeviceClass = deviceMapping[deviceType];
 
     if (DeviceClass) {
@@ -40,4 +43,14 @@ export function getDeviceArray(): Device[] {
     }).filter((device): device is NonNullable<typeof device> => device !== null)
 
     return devices;
+}
+
+export async function getConnectedDeviceArray(userToken: string): Promise<Device[]> {
+    const response = await axios.get(`/devices`, {
+        headers: {
+            Authorization: `Bearer ${userToken}`,
+        }
+    });
+
+    return response.data.devices;
 }

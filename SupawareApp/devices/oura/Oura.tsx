@@ -1,21 +1,30 @@
 import Device from "../../interfaces/DeviceInterface";
 
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // @ts-ignore
 import { OURA_CLIENT_ID, OURA_CLIENT_SECRET } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+const OURA_AUTH_URL = 'https://api.ouraring.com/oauth/authorize';
+const OURA_REDIRECT_URI = 'supaware://oura-callback';
 
 export class Oura implements Device {
     name: string = "Oura";
     image = null;
 
-    authRequest(userToken: string) {
-        const response = axios.post('https://api.ouraring.com/oauth/authorize', {
-            response_type: 'code',
+    async authRequest(userToken: string) {
+        const response = await axios.post('oura/authrequest', {
             client_id: OURA_CLIENT_ID,
-            redirect_uri: 'supaware://oura-callback',
-            state: userToken,
-        });
+            state: {
+                token: userToken,
+            }
+        })
+            .then(response => {
+                console.log('Oura authRequest:', response.data);
+            })
+            .catch(error => {
+                console.error('Oura authRequest:', error);
+            });
     }
 
     async authCallback(event: any) {
@@ -27,7 +36,7 @@ export class Oura implements Device {
 
         // Get the code, user token, and scope from the event
         const code = event.code;
-        const userToken = event.state;
+        const userToken = event.state.token;
         const scope = event.scope;
         const redirect_uri = 'supaware://oura-callback';
         const client_id = OURA_CLIENT_ID;
@@ -41,7 +50,13 @@ export class Oura implements Device {
             redirect_uri,
             client_id,
             client_secret,
-        });
+        })
+            .then(response => {
+                console.log('Oura authCallback:', response.data);
+            })
+            .catch(error => {
+                console.error('Oura authCallback:', error);
+            });
 
         // Save the access token, refresh token, and expiration time in AsyncStorage
         const { access_token, refresh_token, expiration } = response.data;

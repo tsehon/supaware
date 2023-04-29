@@ -6,6 +6,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const HomePage: React.FC = () => {
     const { userToken } = useContext(AuthContext);
+    console.log(userToken);
 
     const [devices, setDevices] = useState([]);
 
@@ -14,7 +15,7 @@ const HomePage: React.FC = () => {
             try {
                 const response = await axios.get(`/devices`, {
                     headers: {
-                        Authorization: `Bearer ${userToken}`,
+                        authorization: `${userToken}`,
                     },
                 });
                 setDevices(response.data.devices);
