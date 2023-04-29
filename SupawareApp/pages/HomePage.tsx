@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { AuthContext } from '../contexts/AuthContext';
 import axios from 'axios';
 import { TouchableOpacity } from 'react-native-gesture-handler';

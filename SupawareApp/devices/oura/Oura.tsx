@@ -6,6 +6,9 @@ import { OURA_CLIENT_ID, OURA_CLIENT_SECRET } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export class Oura implements Device {
+    name: string = "Oura";
+    image = null;
+
     authRequest(userToken: string) {
         const response = axios.post('https://api.ouraring.com/oauth/authorize', {
             response_type: 'code',
@@ -50,6 +53,4 @@ export class Oura implements Device {
     refresh() {
         throw new Error("Method not implemented.");
     }
-
-    image = null;
 }
