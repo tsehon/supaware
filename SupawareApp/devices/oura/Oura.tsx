@@ -1,4 +1,4 @@
-import Device from "../../interfaces/DeviceInterface";
+import Device, { getToday, getYesterday } from "../../interfaces/DeviceInterface";
 
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,6 +24,11 @@ export class Oura implements Device {
     refresh_token = "";
     expires_at = 0;
     scope = "";
+    data = {
+        sleep: {},
+        activity: {},
+        readiness: {},
+    };
 
     async authRequest(userToken: string) {
         console.log('Oura authRequest userToken:', userToken);
@@ -131,9 +136,6 @@ export class Oura implements Device {
                 console.error('Oura refresh error:', error);
             }
         }
-        else {
-            console.log('Oura refresh: token not expired');
-        }
     }
 
     async disconnect() {
@@ -160,5 +162,102 @@ export class Oura implements Device {
         }).catch((error) => {
             console.error('Oura disconnect:', error);
         });
+    }
+
+    async fetchData(): Promise<void> {
+        if (this.owner === "") {
+            console.error(this.name + ' fetchdata: owner is empty');
+            return;
+        }
+
+        // refresh token
+        await this.refresh();
+
+        try {
+            await this.fetch_activity_data();
+            await this.fetch_readiness_data();
+            await this.fetch_sleep_data();
+
+            console.log('Oura data:', this.data);
+            console.log('Oura data fetched.');
+        }
+        catch (error) {
+            console.error('Oura fetchdata:', error);
+        }
+    }
+
+    async fetch_sleep_data(): Promise<void> {
+        const start = getYesterday();
+        const end = getToday();
+
+        try {
+            const response = await axios.get('https://api.ouraring.com/v1/sleep', {
+                headers: {
+                    'Authorization': `Bearer ${this.access_token}`,
+                },
+                params: {
+                    'start': start,
+                    'end': end,
+                },
+            });
+
+            if (response.status === 200 && response.data) {
+                this.data.sleep = response.data.sleep;
+            } else {
+                console.error('Oura fetch_sleep_data: Error:', response);
+            }
+        } catch (error) {
+            console.error('Oura fetch_sleep_data: Error:', error);
+        }
+    }
+
+    async fetch_activity_data(): Promise<void> {
+        const start = getYesterday();
+        const end = getToday();
+
+        try {
+            const response = await axios.get('https://api.ouraring.com/v1/activity', {
+                headers: {
+                    'Authorization': `Bearer ${this.access_token}`,
+                },
+                params: {
+                    'start': start,
+                    'end': end,
+                },
+            });
+
+            if (response.status === 200 && response.data) {
+                this.data.activity = response.data.activity;
+            } else {
+                console.error('Oura fetch_activity_data: Error:', response);
+            }
+        } catch (error) {
+            console.error('Oura fetch_activity_data: Error:', error);
+        }
+    }
+
+    async fetch_readiness_data(): Promise<void> {
+        const start = getYesterday();
+        const end = getToday();
+
+        try {
+            const response = await axios.get('https://api.ouraring.com/v1/readiness', {
+                headers: {
+                    'Authorization': `Bearer ${this.access_token}`,
+                },
+                params: {
+                    'start': start,
+                    'end': end,
+                },
+            });
+
+            if (response.status === 200 && response.data) {
+                this.data.readiness = response.data.readiness;
+            } else {
+                console.error('Oura fetch_readiness_data: Error:', response);
+            }
+        } catch (error) {
+            console.error('Oura fetch_readiness_data: Error:', error);
+        }
     }
 }

@@ -10,11 +10,13 @@ export default interface Device {
     refresh_token: string; // refresh token for the device
     expires_at: number; // when the access token expires
     scope: string; // scope of the device (what data it can access)
+    data: any; // data fetched from the device
 
     authRequest: (userToken: string) => Promise<void>;
     authCallback: (event: any) => Promise<void>;
     refresh(): Promise<void>;
     disconnect(): Promise<void>;
+    fetchData(): Promise<void>;
 }
 
 type DeviceConstructor = new () => Device;
@@ -35,12 +37,14 @@ const deviceInstances: Record<string, Device> = {};
 export async function configureDeviceInstances(userToken: string) {
     console.log('Configuring device instances...');
     const connectedDevices = await getConnectedDeviceArray(userToken);
-    console.log('Connected devices:', connectedDevices);
     for (const device of connectedDevices) {
         deviceInstances[device.name.toLowerCase()] = device;
         device.owner = userToken;
+        device.is_connected = true;
         device.refresh();
+        device.fetchData();
     }
+    console.log('Connected devices:', connectedDevices);
     // Add default device instances
     for (const device of getDeviceArray()) {
         if (!deviceInstances[device.name.toLowerCase()]) {
@@ -63,7 +67,6 @@ export function createDevice(deviceType: string): Device | null {
     }
 
     if (deviceInstances[deviceType]) {
-        console.log('Returning existing device instance:', deviceInstances[deviceType]);
         return deviceInstances[deviceType];
     }
 
@@ -111,7 +114,6 @@ export async function getConnectedDeviceArray(userToken: string | null): Promise
             }
         })
             .then((response) => {
-                console.log('Axios request to /devices completed: ', response.data);
                 if (response.data && Array.isArray(response.data)) {
                     response.data.forEach((device: any) => {
                         const deviceInstance = createDevice(device.accountType);
@@ -132,11 +134,28 @@ export async function getConnectedDeviceArray(userToken: string | null): Promise
                 console.log('Axios request to /devices failed. Error:', error);
             });
 
-        console.log('Fetched connected devices:', connectedDevices);
         return connectedDevices;
     }
     catch (error) {
         console.log('Axios request to /devices failed. Error:', error);
         return [];
     }
+}
+
+export function getToday(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+export function getYesterday(): string {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const day = String(yesterday.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }

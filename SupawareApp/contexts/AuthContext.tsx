@@ -39,13 +39,6 @@ type AuthProviderProps = {
     children: ReactNode;
 };
 
-const clearDeviceInfo = async () => {
-    const deviceAccessInfo = await AsyncStorage.getAllKeys().then((keys) => {
-        return keys.filter((key) => (key.includes('-accessToken') || key.includes('-refreshToken') || key.includes('-expiry') || key.includes('-connected')));
-    });
-    AsyncStorage.multiRemove(deviceAccessInfo);
-};
-
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -62,7 +55,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
         signOut: async () => {
             try {
-                await clearDeviceInfo();
                 await AsyncStorage.removeItem('userToken');
                 dispatch({ type: 'SIGN_OUT' });
             } catch (error) {
@@ -77,6 +69,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 const storedToken = await AsyncStorage.getItem('userToken');
                 if (storedToken) {
                     dispatch({ type: 'SIGN_IN', payload: storedToken });
+                    configureDeviceInstances(storedToken);
                 }
             } catch (error) {
                 console.log('Error loading user token from AsyncStorage:', error);
