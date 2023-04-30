@@ -7,7 +7,7 @@ import AppNav from './pages/AppNav';
 const App: React.FC = () => {
   useEffect(() => {
     // Add event listener for deep links
-    Linking.addEventListener('url', handleDeepLink);
+    const subscription = Linking.addEventListener('url', handleDeepLink);
 
     // Handle initial deep link, if the app was not already running
     Linking.getInitialURL()
@@ -20,7 +20,7 @@ const App: React.FC = () => {
 
     // Cleanup event listener on unmount
     return () => {
-      Linking.removeAllListeners('url');
+      subscription.remove();
     };
   }, []);
 

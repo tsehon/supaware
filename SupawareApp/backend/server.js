@@ -180,16 +180,20 @@ app.get('/devices', async (req, res) => {
 app.post('/disconnect', async (req, res) => {
     console.log("POST /disconnect");
     const { userToken, deviceType } = req.body;
+    console.log("- deviceType: " + deviceType);
+    console.log("- userToken: " + userToken);
 
     const username = jwt.verify(userToken, process.env.JWT_SECRET).username;
     const user = await usersCollection.findOne({ username });
 
     if (!user) {
+        console.log("- User not found");
         return res.status(404).json({ message: 'User not found' });
     }
 
     const token = await tokensCollection.findOne({ userId: user._id, accountType: deviceType });
     if (!token) {
+        console.log("- Token not found");
         return res.status(404).json({ message: 'Token not found' });
     }
 

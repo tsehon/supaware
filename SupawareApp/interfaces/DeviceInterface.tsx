@@ -6,10 +6,10 @@ export default interface Device {
     image: any;
     owner: string;
 
-    authRequest: (userToken: string) => void;
-    authCallback: (event: any) => void;
-    refresh(): void;
-    disconnect(): void;
+    authRequest: (userToken: string) => Promise<void>;
+    authCallback: (event: any) => Promise<void>;
+    refresh(): Promise<void>;
+    disconnect(): Promise<void>;
 }
 
 type DeviceConstructor = new () => Device;

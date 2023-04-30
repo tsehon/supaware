@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 
 interface RegisterPageProps {
-    onRegisterSuccess: () => void;
+    navigation: any;
 }
 
-const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess }) => {
+const RegisterPage: React.FC<RegisterPageProps> = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -16,7 +16,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess }) => {
                 username,
                 password,
             });
-            onRegisterSuccess();
+            navigation.navigate('Login');
         } catch (error) {
             console.error(error);
         }
@@ -41,6 +41,9 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess }) => {
                 autoCapitalize="none"
             />
             <Button title="Register" onPress={registerUser} />
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Text style={styles.backButtonText}>Back to Login</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -62,6 +65,13 @@ const styles = StyleSheet.create({
         borderColor: 'gray',
         borderRadius: 5,
         marginBottom: 15,
+    },
+    backButton: {
+        marginTop: 15,
+    },
+    backButtonText: {
+        fontSize: 16,
+        color: 'blue',
     },
 });
 

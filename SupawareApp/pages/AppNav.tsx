@@ -66,8 +66,7 @@ const AppNav: React.FC = () => {
                         })}
                         children={(props) => (
                             <RegisterPage
-                                {...props}
-                                onRegisterSuccess={() => props.navigation.navigate('Login')}
+                                navigation={props.navigation}
                             />
                         )}
                     />

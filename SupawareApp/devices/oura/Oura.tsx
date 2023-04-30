@@ -21,6 +21,8 @@ export class Oura implements Device {
     owner = "";
 
     async authRequest(userToken: string) {
+        console.log('Oura authRequest userToken:', userToken);
+
         try {
             const response = await axios.post('oura/authrequest', {
                 client_id: OURA_CLIENT_ID,
@@ -82,34 +84,24 @@ export class Oura implements Device {
             }
 
             console.log('Oura authCallback:', response.data);
-
-            // Save the access token, refresh token, and expiration time in AsyncStorage
-            const { access_token, refresh_token, expiration } = response.data;
-            await AsyncStorage.setItem('oura-accessToken', access_token);
-            await AsyncStorage.setItem('oura-refreshToken', refresh_token);
-            await AsyncStorage.setItem('oura-expiry', expiration);
         } catch (error) {
             console.error('Oura authCallback:', error);
         }
     }
 
-    refresh() {
+    async refresh() {
         throw new Error("Method not implemented.");
     }
 
-    disconnect(): void {
+    async disconnect() {
         if (this.owner === "") {
             console.error(this.name + ' disconnect: owner is empty');
             return;
         }
 
-        AsyncStorage.removeItem('oura-accessToken');
-        AsyncStorage.removeItem('oura-refreshToken');
-        AsyncStorage.removeItem('oura-expiry');
-
         axios.post('/disconnect', {
             userToken: this.owner,
-            deviceType: this.name,
+            deviceType: this.name.toLowerCase(),
         }).then((response) => {
             console.log('Oura disconnect:', response.data);
         }).catch((error) => {
