@@ -19,6 +19,11 @@ export class Oura implements Device {
     name: string = "Oura";
     image = null;
     owner = "";
+    is_connected = false;
+    access_token = "";
+    refresh_token = "";
+    expires_at = new Date();
+    scope = "";
 
     async authRequest(userToken: string) {
         console.log('Oura authRequest userToken:', userToken);

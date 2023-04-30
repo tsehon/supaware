@@ -161,21 +161,20 @@ app.get('/devices', async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
     }
 
-    const device_tokens = tokensCollection.find({ userId: user._id });
-    let device_types = []
-    for await (const token of device_tokens) {
-        device_types.push(token.accountType);
+    const tokens = tokensCollection.find({ userId: user._id });
+
+    if (!tokens) {
+        console.log("- No devices found");
+        return res.json([]);
     }
 
-    console.log("- Device types: " + device_types);
+    const devices = [];
+    await tokens.forEach((token) => {
+        devices.push(token);
+    });
 
-    if (!device_types || device_types.length == 0) {
-        res.json([]);
-    }
-    else {
-        const devices = device_types;
-        res.json(devices);
-    }
+    console.log("- Devices found:", devices);
+    res.json(devices);
 });
 
 app.post('/disconnect', async (req, res) => {

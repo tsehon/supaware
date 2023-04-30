@@ -1,5 +1,6 @@
 import React, { createContext, useReducer, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { configureDeviceInstances } from '../interfaces/DeviceInterface';
 
 type AuthState = {
     userToken: string | null;
@@ -53,6 +54,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         signIn: async (token: string) => {
             try {
                 await AsyncStorage.setItem('userToken', token);
+                configureDeviceInstances(token);
                 dispatch({ type: 'SIGN_IN', payload: token });
             } catch (error) {
                 console.error('Error storing user token in AsyncStorage:', error);
