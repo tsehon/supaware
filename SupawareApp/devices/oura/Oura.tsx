@@ -99,9 +99,11 @@ export class Oura implements Device {
             return;
         }
 
+        const type = this.name.toLowerCase();
+
         axios.post('/disconnect', {
             userToken: this.owner,
-            deviceType: this.name.toLowerCase(),
+            deviceType: type,
         }).then((response) => {
             console.log('Oura disconnect:', response.data);
         }).catch((error) => {

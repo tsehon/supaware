@@ -19,7 +19,12 @@ export const deviceMapping: Record<string, DeviceConstructor> = {
 };
 
 export function createDevice(deviceType: string): Device | null {
-    deviceType = deviceType.toLowerCase();
+    if (deviceType === "" || deviceType === null || deviceType === undefined) {
+        console.error('Invalid device type:', deviceType);
+        return null;
+    } else {
+        deviceType = deviceType.toLowerCase();
+    }
 
     const DeviceClass = deviceMapping[deviceType];
 
@@ -49,24 +54,40 @@ export function getDeviceArray(): Device[] {
 }
 
 export async function getConnectedDeviceArray(userToken: string | null): Promise<Device[]> {
+    console.log('Getting connected devices...');
     if (!userToken) {
         return [];
     }
 
-    const response = await axios.get(`/devices`, {
-        headers: {
-            Authorization: `${userToken}`,
-        }
-    });
+    const connectedDevices: Device[] = [];
 
-    let devices: Device[] = [];
-    for (const device_type of response.data) {
-        const device = createDevice(device_type);
-        if (device) {
-            device.owner = userToken;
-            devices.push(device);
-        }
+    try {
+        const response = await axios.get(`/devices`, {
+            headers: {
+                authorization: `${userToken}`,
+            }
+        })
+            .then((response) => {
+                console.log('Axios request to /devices completed.');
+                if (response.data && Array.isArray(response.data)) {
+                    response.data.forEach((device: any) => {
+                        const deviceInstance = createDevice(device);
+                        if (deviceInstance) {
+                            deviceInstance.owner = device.owner;
+                            connectedDevices.push(deviceInstance);
+                        }
+                    });
+                }
+            })
+            .catch((error) => {
+                console.log('Axios request to /devices failed. Error:', error);
+            });
+
+        console.log('Fetched connected devices:', connectedDevices);
+        return connectedDevices;
     }
-
-    return devices;
+    catch (error) {
+        console.log('Axios request to /devices failed. Error:', error);
+        return [];
+    }
 }

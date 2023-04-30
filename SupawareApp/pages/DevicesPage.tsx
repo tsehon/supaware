@@ -8,66 +8,43 @@ const Devices: React.FC = () => {
     const { userToken } = useContext(AuthContext);
     const [connectedDevices, setConnectedDevices] = useState<Device[]>([]);
     const [disconnectedDevices, setDisonnectedDevices] = useState<Device[]>([]);
-    const [userDisconnectedDevice, setUserDisconnectedDevice] = useState(false);
-
-
 
     useEffect(() => {
-        const getDevices = async () => {
-            setDisonnectedDevices(getDeviceArray());
-
-            if (userToken === null) {
-                console.log('No user token')
-                setConnectedDevices([]);
-                return;
-            }
-
-            try {
-                const connected = await getConnectedDeviceArray(userToken);
-                setConnectedDevices(connected);
-                console.log('Connected devices:', connected);
-                const devices = getDeviceArray();
-                setDisonnectedDevices(
-                    devices.filter(
-                        (item) => !connected.some((connectedDevice) => connectedDevice.name === item.name)
-                    )
-                );
-                console.log('Disconnected devices:', disconnectedDevices);
-            }
-            catch (error) {
-                console.error(error);
-            }
-        };
-
         const getConnected = async () => {
-            setDisonnectedDevices(getDeviceArray());
+            const devices = getDeviceArray();
+            console.log('All devices:', devices);
 
             if (userToken === null) {
-                console.log('No user token')
+                console.log('No user token');
                 setConnectedDevices([]);
-                return;
-            }
-
-            const connected = await getConnectedDeviceArray(userToken);
-            setConnectedDevices(connected);
-            console.log('Connected devices:', connected);
-        };
-
-        const getDisconnected = async (connected: Device[]) => {
-            const devices = getDeviceArray();
-            setDisonnectedDevices(
-                devices.filter(
+                setDisonnectedDevices(devices);
+            } else {
+                console.log('Attempting to fetch connected devices');
+                const connected = await getConnectedDeviceArray(userToken);
+                console.log('Setting connected devices:', connected);
+                setConnectedDevices(connected);
+                const disconnected = devices.filter(
                     (item) => !connected.some((connectedDevice) => connectedDevice.name === item.name)
-                )
-            );
+                );
+                if (disconnected !== disconnectedDevices) {
+                    console.log('Setting disconnected devices:', disconnected);
+                    setDisonnectedDevices(disconnected);
+                }
+            }
         };
 
-        getConnected().then(() => {
-            getDisconnected(connectedDevices);
-        }).then(() => {
-            setUserDisconnectedDevice(false);
-        });
-    }, [userToken, userDisconnectedDevice]);
+        getConnected();
+    }, [userToken]);
+
+    const disconnect = async (device: Device) => {
+        try {
+            await device.disconnect();
+            setConnectedDevices((prev) => prev.filter((d) => d.name !== device.name));
+            setDisonnectedDevices((prev) => [...prev, device]);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     if (!userToken) {
         return (
@@ -76,17 +53,6 @@ const Devices: React.FC = () => {
             </View>
         );
     }
-
-    const disconnect = async (device: Device) => {
-        try {
-            device.disconnect().then(() => {
-                setUserDisconnectedDevice(true);
-            });
-        }
-        catch (error) {
-            console.error(error);
-        }
-    };
 
     return (
         <View style={styles.container}>

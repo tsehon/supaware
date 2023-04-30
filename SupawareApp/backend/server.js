@@ -157,6 +157,7 @@ app.get('/devices', async (req, res) => {
     const user = await usersCollection.findOne({ username });
 
     if (!user) {
+        console.log("- User not found");
         return res.status(404).json({ message: 'User not found' });
     }
 
@@ -169,12 +170,12 @@ app.get('/devices', async (req, res) => {
     console.log("- Device types: " + device_types);
 
     if (!device_types || device_types.length == 0) {
-        console.log("- No devices found");
-        return [];
+        res.json([]);
     }
-
-    const devices = device_types;
-    res.json(devices);
+    else {
+        const devices = device_types;
+        res.json(devices);
+    }
 });
 
 app.post('/disconnect', async (req, res) => {
