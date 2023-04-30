@@ -177,6 +177,26 @@ app.get('/devices', async (req, res) => {
     res.json(devices);
 });
 
+app.post('/disconnect', async (req, res) => {
+    console.log("POST /disconnect");
+    const { userToken, deviceType } = req.body;
+
+    const username = jwt.verify(userToken, process.env.JWT_SECRET).username;
+    const user = await usersCollection.findOne({ username });
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    const token = await tokensCollection.findOne({ userId: user._id, accountType: deviceType });
+    if (!token) {
+        return res.status(404).json({ message: 'Token not found' });
+    }
+
+    await tokensCollection.deleteOne({ userId: user._id, accountType: deviceType });
+    res.status(200).json({ message: 'Token deleted successfully' });
+});
+
 // catch-all
 app.all('*', (req, res) => {
     console.log("CATCH-ALL")

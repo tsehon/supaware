@@ -4,9 +4,12 @@ import axios from "axios";
 export default interface Device {
     name: string;
     image: any;
+    owner: string;
+
     authRequest: (userToken: string) => void;
     authCallback: (event: any) => void;
     refresh(): void;
+    disconnect(): void;
 }
 
 type DeviceConstructor = new () => Device;
@@ -60,6 +63,7 @@ export async function getConnectedDeviceArray(userToken: string | null): Promise
     for (const device_type of response.data) {
         const device = createDevice(device_type);
         if (device) {
+            device.owner = userToken;
             devices.push(device);
         }
     }

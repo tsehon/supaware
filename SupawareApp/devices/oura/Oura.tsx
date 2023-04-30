@@ -18,6 +18,7 @@ import { Linking } from 'react-native';
 export class Oura implements Device {
     name: string = "Oura";
     image = null;
+    owner = "";
 
     async authRequest(userToken: string) {
         try {
@@ -76,6 +77,10 @@ export class Oura implements Device {
                 token_url,
             });
 
+            if (userToken !== null) {
+                this.owner = userToken;
+            }
+
             console.log('Oura authCallback:', response.data);
 
             // Save the access token, refresh token, and expiration time in AsyncStorage
@@ -88,8 +93,27 @@ export class Oura implements Device {
         }
     }
 
-
     refresh() {
         throw new Error("Method not implemented.");
+    }
+
+    disconnect(): void {
+        if (this.owner === "") {
+            console.error(this.name + ' disconnect: owner is empty');
+            return;
+        }
+
+        AsyncStorage.removeItem('oura-accessToken');
+        AsyncStorage.removeItem('oura-refreshToken');
+        AsyncStorage.removeItem('oura-expiry');
+
+        axios.post('/disconnect', {
+            userToken: this.owner,
+            deviceType: this.name,
+        }).then((response) => {
+            console.log('Oura disconnect:', response.data);
+        }).catch((error) => {
+            console.error('Oura disconnect:', error);
+        });
     }
 }
