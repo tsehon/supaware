@@ -18,6 +18,8 @@ export const deviceMapping: Record<string, DeviceConstructor> = {
     "oura": Oura,
 };
 
+const deviceInstances: Record<string, Device> = {};
+
 export function createDevice(deviceType: string): Device | null {
     if (deviceType === "" || deviceType === null || deviceType === undefined) {
         console.error('Invalid device type:', deviceType);
@@ -26,10 +28,17 @@ export function createDevice(deviceType: string): Device | null {
         deviceType = deviceType.toLowerCase();
     }
 
+    if (deviceInstances[deviceType]) {
+        console.log('Returning existing device instance:', deviceInstances[deviceType]);
+        return deviceInstances[deviceType];
+    }
+
     const DeviceClass = deviceMapping[deviceType];
 
     if (DeviceClass) {
-        return new DeviceClass();
+        const newInstance = new DeviceClass();
+        deviceInstances[deviceType] = newInstance;
+        return newInstance;
     } else {
         console.error('Invalid device type:', deviceType);
         return null;
