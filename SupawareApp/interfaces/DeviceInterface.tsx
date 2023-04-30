@@ -8,7 +8,7 @@ export default interface Device {
     is_connected: boolean; // whether the device is connected
     access_token: string; // access token for the device
     refresh_token: string; // refresh token for the device
-    expires_at: Date; // when the access token expires
+    expires_at: number; // when the access token expires
     scope: string; // scope of the device (what data it can access)
 
     authRequest: (userToken: string) => Promise<void>;
@@ -38,6 +38,8 @@ export async function configureDeviceInstances(userToken: string) {
     console.log('Connected devices:', connectedDevices);
     for (const device of connectedDevices) {
         deviceInstances[device.name.toLowerCase()] = device;
+        device.owner = userToken;
+        device.refresh();
     }
     // Add default device instances
     for (const device of getDeviceArray()) {
@@ -118,7 +120,7 @@ export async function getConnectedDeviceArray(userToken: string | null): Promise
                             deviceInstance.owner = userToken;
                             deviceInstance.access_token = device.accessToken;
                             deviceInstance.refresh_token = device.refreshToken;
-                            deviceInstance.expires_at = new Date(device.expiry);
+                            deviceInstance.expires_at = device.expires_at;
                             deviceInstance.scope = device.scope;
                             deviceInstance.is_connected = true;
                             connectedDevices.push(deviceInstance);

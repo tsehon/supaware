@@ -12,6 +12,7 @@ const HomePage: React.FC = () => {
         const updateDevices = async () => {
             const devices = getDeviceInstancesArray();
             setConnectedDevices(devices.filter((device) => device.is_connected));
+            console.log("Updating devices: ", devices);
         };
 
         updateDevices();

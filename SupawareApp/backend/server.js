@@ -126,14 +126,14 @@ app.post('/oura/authorize', async (req, res) => {
 
     // get the time of token expiry
     const currentTime = Math.floor(Date.now() / 1000);
-    const expirationTime = currentTime + rdata.expires_in;
-    const expiration = new Date(expirationTime);
+    const expires_at = currentTime + rdata.expires_in;
 
     const data = {
         access_token: rdata.access_token,
         refresh_token: rdata.refresh_token,
-        expiration: expiration,
+        expires_at: expires_at,
     }
+
 
     // Store the data in MongoDB
     const newToken = {
@@ -176,6 +176,73 @@ app.get('/devices', async (req, res) => {
     console.log("- Devices found:", devices);
     res.json(devices);
 });
+
+app.post('/oura/refresh', async (req, res) => {
+    console.log("POST /oura/refresh");
+    const { grant_type, refresh_token, client_id, client_secret, token_url, userToken, scope } = req.body;
+
+    const requestBody = querystring.stringify({
+        grant_type,
+        refresh_token,
+        client_id,
+        client_secret,
+    });
+
+    try {
+        const response = await fetch(token_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Encoding': 'utf-8',
+            },
+            body: requestBody
+        });
+
+        const rdata = await response.json();
+        console.log("- Data: " + rdata);
+
+        const username = jwt.verify(userToken, process.env.JWT_SECRET).username;
+        const user = await usersCollection.findOne({ username });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // get the time of token expiry
+        const currentTime = Math.floor(Date.now() / 1000);
+        const expires_at = currentTime + rdata.expires_in;
+
+        const data = {
+            access_token: rdata.access_token,
+            refresh_token: rdata.refresh_token,
+            expires_at: expires_at,
+        }
+
+        // Store the data in MongoDB
+        const newToken = {
+            userId: user._id,
+            accountType: "oura",
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token,
+            expiry: data.expiration,
+            scope: scope,
+        }
+
+        const existingToken = await tokensCollection.findOne({ userId: user._id, accountType: "oura" });
+
+        if (existingToken) {
+            await tokensCollection.updateOne({ userId: user._id, accountType: "oura" }, { $set: newToken });
+        } else {
+            await tokensCollection.insertOne(newToken);
+        }
+
+        res.status(200).json({ data });
+    } catch (error) {
+        console.error('Error updating Oura refresh token:', error);
+        res.status(500).json({ message: 'Error updating Oura refresh token' });
+    }
+});
+
 
 app.post('/disconnect', async (req, res) => {
     console.log("POST /disconnect");

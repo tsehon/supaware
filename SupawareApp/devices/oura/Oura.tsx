@@ -22,7 +22,7 @@ export class Oura implements Device {
     is_connected = false;
     access_token = "";
     refresh_token = "";
-    expires_at = new Date();
+    expires_at = 0;
     scope = "";
 
     async authRequest(userToken: string) {
@@ -89,13 +89,51 @@ export class Oura implements Device {
             }
 
             console.log('Oura authCallback:', response.data);
+
+            // Store the access token, refresh token, and expiry date
+            this.access_token = response.data.access_token;
+            this.refresh_token = response.data.refresh_token;
+            this.expires_at = response.data.expires_at;
+
         } catch (error) {
             console.error('Oura authCallback:', error);
         }
     }
 
     async refresh() {
-        throw new Error("Method not implemented.");
+        // check if past expiry date
+        if (this.expires_at === 0) {
+            console.log('Oura refresh: no token');
+            return;
+        }
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (this.expires_at <= currentTime) {
+            console.log('Oura refresh: token expired');
+            // refresh token
+            try {
+                const response = await axios.post('/oura/refresh', {
+                    grant_type: 'refresh_token',
+                    refresh_token: this.refresh_token,
+                    client_id: OURA_CLIENT_ID,
+                    client_secret: OURA_CLIENT_SECRET,
+                    token_url: OURA_TOKEN_URL,
+                    userToken: this.owner,
+                    scope: this.scope,
+                });
+
+                // update tokens
+                this.access_token = response.data.access_token;
+                this.refresh_token = response.data.refresh_token;
+                this.expires_at = response.data.expires_at;
+
+                console.log('Oura refresh success:', response.data);
+            } catch (error) {
+                console.error('Oura refresh error:', error);
+            }
+        }
+        else {
+            console.log('Oura refresh: token not expired');
+        }
     }
 
     async disconnect() {
@@ -105,6 +143,14 @@ export class Oura implements Device {
         }
 
         const type = this.name.toLowerCase();
+
+        // clear all data
+        this.owner = "";
+        this.is_connected = false;
+        this.access_token = "";
+        this.refresh_token = "";
+        this.expires_at = 0;
+        this.scope = "";
 
         axios.post('/disconnect', {
             userToken: this.owner,
