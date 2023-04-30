@@ -91,12 +91,19 @@ app.post('/oura/authrequest', (req, res) => {
     return res.status(200).json({ redirectUrl });
 });
 
-
 // Oura API route
 app.post('/oura/authorize', async (req, res) => {
     console.log("POST /oura/authorize");
     const { code, scope, userToken, redirect_uri, client_id, client_secret, token_url } = req.body;
     const grant_type = 'authorization_code';
+
+    const requestBody = querystring.stringify({
+        grant_type,
+        code,
+        redirect_uri,
+        client_id,
+        client_secret,
+    });
 
     const response = await fetch(token_url, {
         method: 'POST',
@@ -104,11 +111,11 @@ app.post('/oura/authorize', async (req, res) => {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Encoding': 'utf-8',
         },
-        body: `grant_type=${grant_type}&code=${code}&redirect_uri=${redirect_uri}&client_id=${client_id}&client_secret=${client_secret}`
+        body: requestBody
     });
 
-    const data = await response.json();
-    console.log("- Data: " + data);
+    const rdata = await response.json();
+    console.log("- Data: " + rdata);
 
     const username = jwt.verify(userToken, process.env.JWT_SECRET).username;
     const user = await usersCollection.findOne({ username });
@@ -119,8 +126,14 @@ app.post('/oura/authorize', async (req, res) => {
 
     // get the time of token expiry
     const currentTime = Math.floor(Date.now() / 1000);
-    const expirationTime = currentTime + data.expires_in;
+    const expirationTime = currentTime + rdata.expires_in;
     const expiration = new Date(expirationTime);
+
+    const data = {
+        access_token: rdata.access_token,
+        refresh_token: rdata.refresh_token,
+        expiration: expiration,
+    }
 
     // Store the data in MongoDB
     const newToken = {
@@ -128,12 +141,12 @@ app.post('/oura/authorize', async (req, res) => {
         accountType: "oura",
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
-        expiry: expiration,
+        expiry: data.expiration,
         scope: scope,
     }
 
     await tokensCollection.insertOne(newToken);
-    res.json(data, expiration);
+    res.status(200).json({ data });
 });
 
 app.get('/devices', async (req, res) => {

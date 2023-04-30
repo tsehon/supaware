@@ -45,7 +45,11 @@ export function getDeviceArray(): Device[] {
     return devices;
 }
 
-export async function getConnectedDeviceArray(userToken: string): Promise<Device[]> {
+export async function getConnectedDeviceArray(userToken: string | null): Promise<Device[]> {
+    if (!userToken) {
+        return [];
+    }
+
     const response = await axios.get(`/devices`, {
         headers: {
             Authorization: `Bearer ${userToken}`,

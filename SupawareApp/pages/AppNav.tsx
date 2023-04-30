@@ -10,9 +10,7 @@ import HomePage from './HomePage';
 import SettingsNavigator from './SettingsNavigator';
 import RegisterPage from './RegisterPage';
 import LoginPage from './LoginPage';
-
 import TabBarIcon from '../ui_components/TabBarIcon';
-import handleDeepLink from '../logical_components/DeepLink';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -23,22 +21,6 @@ axios.defaults.baseURL = API_URL;
 
 const AppNav: React.FC = () => {
     const { userToken } = useContext(AuthContext);
-
-    useEffect(() => {
-        // When the component mounts, check if the app was launched via a deep link
-        Linking.getInitialURL()
-            .then((url) => {
-                if (url) {
-                    handleDeepLink({ url });
-                }
-            })
-            .catch((err) => console.error('Error getting initial URL', err));
-
-        // Clean up the event listener on unmount
-        return () => {
-            Linking.addEventListener('url', handleDeepLink);
-        };
-    }, []);
 
     return (
         <NavigationContainer>

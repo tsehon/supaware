@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import { View, Text } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { getDeviceArray } from '../interfaces/DeviceInterface';
+import { getConnectedDeviceArray, getDeviceArray } from '../interfaces/DeviceInterface';
 import { AuthContext } from '../contexts/AuthContext';
-
-const devices = getDeviceArray();
 
 const Devices: React.FC = () => {
     const { userToken } = useContext(AuthContext);
+    const devices = getDeviceArray();
+    const connected = getConnectedDeviceArray(userToken);
 
     if (!userToken) {
         return (
