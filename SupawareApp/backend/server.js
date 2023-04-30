@@ -153,6 +153,7 @@ app.get('/devices', async (req, res) => {
     console.log("GET /devices");
 
     const username = jwt.verify(req.headers.authorization, process.env.JWT_SECRET).username;
+    console.log("- Username: " + username);
     const user = await usersCollection.findOne({ username });
 
     if (!user) {
@@ -160,14 +161,19 @@ app.get('/devices', async (req, res) => {
     }
 
     const device_tokens = tokensCollection.find({ userId: user._id });
-    const device_types = await device_tokens.accountType;
+    let device_types = []
+    for await (const token of device_tokens) {
+        device_types.push(token.accountType);
+    }
 
-    if (!device_types) {
+    console.log("- Device types: " + device_types);
+
+    if (!device_types || device_types.length == 0) {
         console.log("- No devices found");
         return [];
     }
 
-    const devices = device_types.toArray();
+    const devices = device_types;
     res.json(devices);
 });
 

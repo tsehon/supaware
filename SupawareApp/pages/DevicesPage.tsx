@@ -1,13 +1,32 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { getConnectedDeviceArray, getDeviceArray } from '../interfaces/DeviceInterface';
+import Device, { getConnectedDeviceArray, getDeviceArray } from '../interfaces/DeviceInterface';
 import { AuthContext } from '../contexts/AuthContext';
 
 const Devices: React.FC = () => {
     const { userToken } = useContext(AuthContext);
-    const devices = getDeviceArray();
-    const connected = getConnectedDeviceArray(userToken);
+    const [connectedDevices, setConnectedDevices] = useState<Device[]>([]);
+    const [disconnectedDevices, setDisonnectedDevices] = useState<Device[]>([]);
+
+    useEffect(() => {
+        const getDevices = async () => {
+            const devices = getDeviceArray();
+            try {
+                const connected = await getConnectedDeviceArray(userToken);
+                setConnectedDevices(connected);
+                setDisonnectedDevices(
+                    devices.filter(
+                        (item) => !connected.some((connectedDevice) => connectedDevice.name === item.name)
+                    )
+                );
+            }
+            catch (error) {
+                console.error(error);
+            }
+        };
+        getDevices();
+    }, []);
 
     if (!userToken) {
         return (
@@ -19,12 +38,22 @@ const Devices: React.FC = () => {
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Devices Page</Text>
-            {devices.map((item, index) => (
-                <TouchableOpacity key={index} onPress={() => { item.authRequest(userToken) }}>
-                    <Text>Connect {item.name} </Text>
-                </TouchableOpacity>
-            ))}
+            <View>
+                <Text>Connected Devices:</Text>
+                {connectedDevices.map((item, index) => (
+                    <TouchableOpacity key={index} onPress={() => { item.authRequest(userToken) }}>
+                        <Text>Disconnect {item.name} </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+            <View>
+                <Text>New Device?</Text>
+                {disconnectedDevices.map((item, index) => (
+                    <TouchableOpacity key={index} onPress={() => { item.authRequest(userToken) }}>
+                        <Text>Connect {item.name} </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
         </View >
     );
 };
