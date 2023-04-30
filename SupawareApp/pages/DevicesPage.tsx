@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import Device, { getConnectedDeviceArray, getDeviceArray } from '../interfaces/DeviceInterface';
+import Device, { getDeviceInstancesArray } from '../interfaces/DeviceInterface';
 import { AuthContext } from '../contexts/AuthContext';
 
 const Devices: React.FC = () => {
@@ -10,30 +10,13 @@ const Devices: React.FC = () => {
     const [disconnectedDevices, setDisonnectedDevices] = useState<Device[]>([]);
 
     useEffect(() => {
-        const getConnected = async () => {
-            const devices = getDeviceArray();
-            console.log('All devices:', devices);
-
-            if (userToken === null) {
-                console.log('No user token');
-                setConnectedDevices([]);
-                setDisonnectedDevices(devices);
-            } else {
-                console.log('Attempting to fetch connected devices');
-                const connected = await getConnectedDeviceArray(userToken);
-                console.log('Setting connected devices:', connected);
-                setConnectedDevices(connected);
-                const disconnected = devices.filter(
-                    (item) => !connected.some((connectedDevice) => connectedDevice.name === item.name)
-                );
-                if (disconnected !== disconnectedDevices) {
-                    console.log('Setting disconnected devices:', disconnected);
-                    setDisonnectedDevices(disconnected);
-                }
-            }
+        const updateDevices = async () => {
+            const devices = getDeviceInstancesArray();
+            setConnectedDevices(devices.filter((device) => device.is_connected));
+            setDisonnectedDevices(devices.filter((device) => !device.is_connected));
         };
 
-        getConnected();
+        updateDevices();
     }, [userToken]);
 
     const disconnect = async (device: Device) => {

@@ -2,26 +2,22 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, Image } from 'react-native';
 import { AuthContext } from '../contexts/AuthContext';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import Device, { getConnectedDeviceArray } from '../interfaces/DeviceInterface';
+import Device, { getDeviceInstancesArray } from '../interfaces/DeviceInterface';
 
 const HomePage: React.FC = () => {
     const { userToken } = useContext(AuthContext);
-    const [devices, setDevices] = useState<Device[]>([]);
+    const [connectedDevices, setConnectedDevices] = useState<Device[]>([]);
 
     useEffect(() => {
-        const getDevices = async () => {
-            try {
-                const devices = await getConnectedDeviceArray(userToken);
-                setDevices(devices);
-            }
-            catch (error) {
-                console.error(error);
-            }
+        const updateDevices = async () => {
+            const devices = getDeviceInstancesArray();
+            setConnectedDevices(devices.filter((device) => device.is_connected));
         };
-        getDevices();
-    }, []);
 
-    if (!devices) {
+        updateDevices();
+    }, [userToken]);
+
+    if (!connectedDevices) {
         return null;
     }
 
@@ -29,7 +25,7 @@ const HomePage: React.FC = () => {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <View>
                 <Text>Your Devices</Text>
-                {devices.map((item, index) => (
+                {connectedDevices.map((item, index) => (
                     <TouchableOpacity key={index}>
                         <Text>{item.name}</Text>
                     </TouchableOpacity>
