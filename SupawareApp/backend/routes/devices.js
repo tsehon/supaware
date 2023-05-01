@@ -36,6 +36,12 @@ router.get('/connected', async (req, res) => {
 router.post('/disconnect', async (req, res) => {
     console.log("POST /devices/disconnect");
     const { userToken, deviceType } = req.body;
+
+    if (!userToken || !deviceType) {
+        console.log("- Missing fields");
+        return res.status(400).json({ message: 'Missing fields' });
+    }
+
     console.log("- deviceType: " + deviceType);
     console.log("- userToken: " + userToken);
 

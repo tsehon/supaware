@@ -146,14 +146,6 @@ export class Oura implements Device {
 
         const type = this.name.toLowerCase();
 
-        // clear all data
-        this.owner = "";
-        this.is_connected = false;
-        this.access_token = "";
-        this.refresh_token = "";
-        this.expires_at = 0;
-        this.scope = "";
-
         axios.post('/devices/disconnect', {
             userToken: this.owner,
             deviceType: type,
@@ -162,9 +154,22 @@ export class Oura implements Device {
         }).catch((error) => {
             console.error('Oura disconnect:', error);
         });
+
+        // clear all data
+        this.owner = "";
+        this.is_connected = false;
+        this.access_token = "";
+        this.refresh_token = "";
+        this.expires_at = 0;
+        this.scope = "";
     }
 
     async fetchData(): Promise<void> {
+        if (this.access_token === "") {
+            console.error('Oura fetch_sleep_data: access token is empty');
+            return;
+        }
+
         if (this.owner === "") {
             console.error(this.name + ' fetchdata: owner is empty');
             return;
@@ -177,8 +182,6 @@ export class Oura implements Device {
             await this.fetch_activity_data();
             await this.fetch_readiness_data();
             await this.fetch_sleep_data();
-
-            console.log('Oura data:', this.data);
             console.log('Oura data fetched.');
         }
         catch (error) {
@@ -264,6 +267,11 @@ export class Oura implements Device {
     createPromptWithData(): string {
         const { activity, readiness, sleep } = this.data;
 
+        if (!activity || !readiness || !sleep) {
+            console.error('Oura createPromptWithData: data is empty');
+            return '';
+        }
+
         let prompt = 'Based on the following Oura data, provide health insights:\n\n';
 
         prompt += 'Activity:\n';
@@ -284,7 +292,7 @@ export class Oura implements Device {
             // Add more fields as needed
         });
 
-        console.log('Oura createPromptWithData:', prompt);
+        console.log('Oura createPromptWithData:\n', prompt);
         return prompt;
     }
 }

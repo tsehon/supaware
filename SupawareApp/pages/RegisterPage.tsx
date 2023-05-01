@@ -12,7 +12,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ navigation }) => {
 
     const registerUser = async () => {
         try {
-            await axios.post(`/register`, {
+            await axios.post(`/auth/register`, {
                 username,
                 password,
             });

@@ -2,25 +2,32 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, Image } from 'react-native';
 import { AuthContext } from '../contexts/AuthContext';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import Device, { configureDeviceInstances, getDeviceInstancesArray } from '../interfaces/DeviceInterface';
+import Device, { configureDeviceInstances, fetchHealthInsights, getDeviceInstancesArray, getHealthInsights } from '../interfaces/DeviceInterface';
 
 const HomePage: React.FC = () => {
     const { userToken } = useContext(AuthContext);
     const [connectedDevices, setConnectedDevices] = useState<Device[]>([]);
+    const [healthInsights, setHealthInsights] = useState<string>("");
 
     useEffect(() => {
         const updateDevices = async () => {
             if (!userToken) {
                 return;
             }
-            configureDeviceInstances(userToken);
+            await configureDeviceInstances(userToken);
             const devices = getDeviceInstancesArray();
             setConnectedDevices(devices.filter((device) => device.is_connected));
             console.log("Updating devices: ", devices);
+            //fetchHealthInsights();
         };
 
         if (userToken) {
             updateDevices();
+        }
+
+        const healthInsights = getHealthInsights();
+        if (healthInsights) {
+            setHealthInsights(healthInsights);
         }
     }, [userToken]);
 
@@ -30,6 +37,10 @@ const HomePage: React.FC = () => {
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <View>
+                <Text>Health Insights</Text>
+                <Text>{healthInsights}</Text>
+            </View>
             <View>
                 {connectedDevices.map((item, index) => (
                     <TouchableOpacity key={index}>

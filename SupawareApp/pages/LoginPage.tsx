@@ -11,7 +11,7 @@ const LoginPage = ({ navigation }) => {
 
     const loginUser = async () => {
         try {
-            const response = await axios.post(`/login`, {
+            const response = await axios.post(`/auth/login`, {
                 username,
                 password,
             });

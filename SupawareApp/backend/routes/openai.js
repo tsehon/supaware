@@ -1,48 +1,43 @@
 const express = require('express');
 const router = express.Router();
-import { Configuration, OpenAIApi } from "openai";
+const { Configuration, OpenAIApi } = require('openai');
+
 const configuration = new Configuration({
-    organization: process.env.OPENAI_ORGANIZATION_ID,
     apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
-const response = await openai.listEngines();
-console.log("OpenAI engines: ", response.data);
+console.log("Current OpenAI models: ", openai.listModels());
 
-import openai from 'openai';
-// @ts-ignore
-import { OPENAI_API_KEY } from '@env';
-
-async function getHealthInsights() {
-    for (const device of getDeviceInstancesArray()) {
-        if (device.is_connected) {
-            await device.fetchData();
-            const prompt = device.createPromptWithData();
-        }
-    }
+router.post('/health-insights', async (req, res) => {
+    console.log("POST /openai/health-insights");
+    const { prompt } = req.body;
+    console.log("- Prompt:\n", prompt);
+    console.log("- *******");
 
     try {
-        const response = await openai.Completion.create({
-            engine: 'davinci-codex',
-            prompt,
-            max_tokens: 150,
-            n: 1,
-            stop: null,
-            temperature: 0.5,
+        const completion = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: prompt }],
         });
 
-        if (response && response.choices && response.choices.length > 0) {
-            return response.choices[0].text.trim();
-        } else {
-            throw new Error('No response from OpenAI API');
-        }
-    } catch (error) {
-        console.error('Error calling OpenAI API:', error);
-        return 'Failed to get health insights.';
-    }
-}
+        console.log("- Completion:\n", completion.data.choices[0].message.content);
 
-router.get('/health-insights', async (req, res) => {
+        if (completion.status !== 200) {
+            console.log("- Request incomplete, Status: ", completion.status);
+            res.status(500).json({ error: response });
+        }
+
+        if (!completion.data.choices[0].message.content) {
+            console.log("- Request incomplete, No text");
+            return res.status(500).json({ error: response });
+        }
+
+        const data = completion.data.choices[0].message.content.trim();
+        res.json(data);
+    } catch (err) {
+        console.log("- Request incomplete, Error: ", err);
+        res.status(500).json({ error: err });
+    }
 });
 
 module.exports = router;

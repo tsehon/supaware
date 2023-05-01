@@ -27,9 +27,10 @@ export const deviceMapping: Record<string, DeviceConstructor> = {
 };
 
 const deviceInstances: Record<string, Device> = {};
+let healthInsights: string = "";
 
 /*
-* Configure the device instances array
+* Configure the device instances array to mirror the current user
 * Adds to device instances the devices that the user has connected and their corresponding info
 * Adds to device instances the devices that the user has not connected with default info
 * @param userToken - the token of the user who is configuring their devices
@@ -159,4 +160,40 @@ export function getYesterday(): string {
     const month = String(yesterday.getMonth() + 1).padStart(2, '0');
     const day = String(yesterday.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+export async function fetchHealthInsights() {
+    console.log('Fetching health insights...');
+    for (const device of getDeviceInstancesArray()) {
+        if (device.is_connected) {
+            await device.fetchData();
+            const prompt = device.createPromptWithData();
+
+            if (prompt.length === 0) {
+                console.error('Failed to create prompt for device:', device);
+                return;
+            }
+
+            try {
+                const response = await axios.post('/openai/health-insights', {
+                    prompt: prompt,
+                });
+
+                if (response.data) {
+                    console.log('Response from OpenAI API:\n', response.data);
+                    healthInsights = response.data;
+                    return response.data;
+                } else {
+                    throw new Error('No response from OpenAI API');
+                }
+            } catch (error) {
+                console.error('Error calling OpenAI API:', error);
+                return 'Failed to get health insights.';
+            }
+        }
+    }
+}
+
+export function getHealthInsights(): string {
+    return healthInsights;
 }
