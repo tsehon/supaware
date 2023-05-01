@@ -25,9 +25,9 @@ export class Oura implements Device {
     expires_at = 0;
     scope = "";
     data = {
-        sleep: {},
-        activity: {},
-        readiness: {},
+        sleep: [] as any[],
+        activity: [] as any[],
+        readiness: [] as any[],
     };
 
     async authRequest(userToken: string) {
@@ -259,5 +259,32 @@ export class Oura implements Device {
         } catch (error) {
             console.error('Oura fetch_readiness_data: Error:', error);
         }
+    }
+
+    createPromptWithData(): string {
+        const { activity, readiness, sleep } = this.data;
+
+        let prompt = 'Based on the following Oura data, provide health insights:\n\n';
+
+        prompt += 'Activity:\n';
+        activity.forEach((item) => {
+            prompt += `Summary Date: ${item.summary_date}, Steps: ${item.steps}, Calories Active: ${item.cal_active}\n`;
+            // Add more fields as needed
+        });
+
+        prompt += '\nReadiness:\n';
+        readiness.forEach((item) => {
+            prompt += `Summary Date: ${item.summary_date}, Score: ${item.score}\n`;
+            // Add more fields as needed
+        });
+
+        prompt += '\nSleep:\n';
+        sleep.forEach((item) => {
+            prompt += `Summary Date: ${item.summary_date}, Duration: ${item.duration}, Efficiency: ${item.efficiency}\n`;
+            // Add more fields as needed
+        });
+
+        console.log('Oura createPromptWithData:', prompt);
+        return prompt;
     }
 }
