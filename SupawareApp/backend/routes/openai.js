@@ -11,8 +11,6 @@ console.log("Current OpenAI models: ", openai.listModels());
 router.post('/health-insights', async (req, res) => {
     console.log("POST /openai/health-insights");
     const { prompt } = req.body;
-    console.log("- Prompt:\n", prompt);
-    console.log("- *******");
 
     try {
         const completion = await openai.createChatCompletion({

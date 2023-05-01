@@ -17,7 +17,7 @@ export default interface Device {
     refresh(): Promise<void>;
     disconnect(): Promise<void>;
     fetchData(): Promise<void>;
-    createPromptWithData(): string;
+    getDataSummary(): string;
 }
 
 type DeviceConstructor = new () => Device;
@@ -164,33 +164,53 @@ export function getYesterday(): string {
 
 export async function fetchHealthInsights() {
     console.log('Fetching health insights...');
+    healthInsights = "Fetching health insights...";
+
+    let prompt = "You are a doctor. I have collected health data from multiple wearable " +
+        "devices and would like some advice and insights. Here are the key data points: \n";
+
+    let hasData = false;
     for (const device of getDeviceInstancesArray()) {
         if (device.is_connected) {
             await device.fetchData();
-            const prompt = device.createPromptWithData();
+            const dataSummary = device.getDataSummary();
 
-            if (prompt.length === 0) {
+            if (dataSummary.length === 0) {
                 console.error('Failed to create prompt for device:', device);
                 return;
             }
 
-            try {
-                const response = await axios.post('/openai/health-insights', {
-                    prompt: prompt,
-                });
-
-                if (response.data) {
-                    console.log('Response from OpenAI API:\n', response.data);
-                    healthInsights = response.data;
-                    return response.data;
-                } else {
-                    throw new Error('No response from OpenAI API');
-                }
-            } catch (error) {
-                console.error('Error calling OpenAI API:', error);
-                return 'Failed to get health insights.';
-            }
+            prompt += "Device: " + device.name + "\n";
+            prompt += dataSummary + "\n";
+            hasData = true;
         }
+    }
+
+    if (!hasData) {
+        console.log('No data to create prompt with.');
+        healthInsights = "Connect a device to get health insights.";
+        return;
+    }
+
+    prompt += "Based on this data, can you provide health advice and insights" +
+        " to improve my overall well-being? Send your response in a single, concise message."
+        + " Be friendly and professional. Thank you!";
+
+    console.log('Prompt:', prompt);
+
+    try {
+        const response = await axios.post('/openai/health-insights', {
+            prompt: prompt,
+        });
+
+        if (response.data) {
+            console.log('Response from OpenAI API:\n', response.data);
+            healthInsights = response.data;
+            return response.data;
+        }
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        return 'Failed to get health insights.';
     }
 }
 

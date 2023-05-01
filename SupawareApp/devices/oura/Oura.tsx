@@ -264,35 +264,83 @@ export class Oura implements Device {
         }
     }
 
-    createPromptWithData(): string {
+    getDataSummary(): string {
         const { activity, readiness, sleep } = this.data;
 
         if (!activity || !readiness || !sleep) {
-            console.error('Oura createPromptWithData: data is empty');
+            console.error('Oura getDataSummary: data is empty');
             return '';
         }
 
-        let prompt = 'Based on the following Oura data, provide health insights:\n\n';
+        let summary = '';
 
-        prompt += 'Activity:\n';
+        summary += 'Activity:\n';
         activity.forEach((item) => {
-            prompt += `Summary Date: ${item.summary_date}, Steps: ${item.steps}, Calories Active: ${item.cal_active}\n`;
-            // Add more fields as needed
+            summary +=
+                `- Summary Date: ${item.summary_date}\n` +
+                `- Score: ${item.score}\n` +
+                `- Steps: ${item.steps}\n` +
+                `- Calories Total: ${item.cal_total}` +
+                `- Calories Active: ${item.cal_active}\n` +
+                `- Met Min Inactive: ${item.met_min_inactive}\n` +
+                `- Met Min Low: ${item.met_min_low}\n` +
+                `- Met Min Medium: ${item.met_min_medium}\n` +
+                `- Met Min High: ${item.met_min_high}\n` +
+                `- Average Met: ${item.average_met}\n` +
+                `\n`;
         });
 
-        prompt += '\nReadiness:\n';
+        summary += 'Readiness:\n';
         readiness.forEach((item) => {
-            prompt += `Summary Date: ${item.summary_date}, Score: ${item.score}\n`;
-            // Add more fields as needed
+            summary +=
+                `- Summary Date: ${item.summary_date}\n` +
+                `- Score: ${item.score}\n` +
+                `- Score Previous Night: ${item.score_previous_night}\n` +
+                `- Score Sleep Balance: ${item.score_sleep_balance}\n` +
+                `- Score Previous Day: ${item.score_previous_day}\n` +
+                `- Score Activity Balance: ${item.score_activity_balance}\n` +
+                `- Score Resting Heart Rate: ${item.score_resting_hr}\n` +
+                `- Score Heart Rate Variability: ${item.score_hrv_balance}\n` +
+                `- Score Recovery Index: ${item.score_recovery_index}\n` +
+                `- Score Temperature: ${item.score_temperature}\n` +
+                `\n`;
         });
 
-        prompt += '\nSleep:\n';
+        summary += 'Sleep:\n';
         sleep.forEach((item) => {
-            prompt += `Summary Date: ${item.summary_date}, Duration: ${item.duration}, Efficiency: ${item.efficiency}\n`;
-            // Add more fields as needed
+            summary +=
+                `- Summary Date: ${item.summary_date}\n` +
+                `- Is Longest: ${item.is_longest}\n` +
+                `- Timezone: ${item.timezone}\n` +
+                `- Bedtime Start: ${item.bedtime_start}\n` +
+                `- Bedtime End: ${item.bedtime_end}\n` +
+                `- Score: ${item.score}\n` +
+                `- Score Total: ${item.score_total}\n` +
+                `- Score Disturbances: ${item.score_disturbances}\n` +
+                `- Score Efficiency: ${item.score_efficiency}\n` +
+                `- Score Latency: ${item.score_latency}\n` +
+                `- Score REM: ${item.score_rem}\n` +
+                `- Score Deep: ${item.score_deep}\n` +
+                `- Score Alignment: ${item.score_alignment}\n` +
+                `- Total: ${item.total}\n` +
+                `- Duration: ${item.duration}\n` +
+                `- Awake: ${item.awake}\n` +
+                `- Light: ${item.light}\n` +
+                `- REM: ${item.rem}\n` +
+                `- Deep: ${item.deep}\n` +
+                `- Onset Latency: ${item.onset_latency}\n` +
+                `- Restless: ${item.restless}\n` +
+                `- Efficiency: ${item.efficiency}\n` +
+                `- Midpoint Time: ${item.midpoint_time}\n` +
+                `- HR Lowest: ${item.hr_lowest}\n` +
+                `- HR Average: ${item.hr_average}\n` +
+                `- RMSSD: ${item.rmssd}\n` +
+                `- Breath Average: ${item.breath_average}\n` +
+                `- Temperature Delta: ${item.temperature_delta}\n` +
+                `\n`;
         });
 
-        console.log('Oura createPromptWithData:\n', prompt);
-        return prompt;
+        console.log('Oura getDataSummary:\n', summary);
+        return summary;
     }
 }
