@@ -154,7 +154,7 @@ export class Oura implements Device {
         this.expires_at = 0;
         this.scope = "";
 
-        axios.post('/disconnect', {
+        axios.post('/devices/disconnect', {
             userToken: this.owner,
             deviceType: type,
         }).then((response) => {

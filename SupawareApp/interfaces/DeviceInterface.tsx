@@ -109,7 +109,7 @@ export async function getConnectedDeviceArray(userToken: string | null): Promise
     const connectedDevices: Device[] = [];
 
     try {
-        const response = await axios.get(`/devices`, {
+        const response = await axios.get(`/devices/connected`, {
             headers: {
                 authorization: `${userToken}`,
             }
@@ -132,13 +132,13 @@ export async function getConnectedDeviceArray(userToken: string | null): Promise
                 }
             })
             .catch((error) => {
-                console.log('Axios request to /devices failed. Error:', error);
+                console.log('Axios request to /devices/connected failed. Error:', error);
             });
 
         return connectedDevices;
     }
     catch (error) {
-        console.log('Axios request to /devices failed. Error:', error);
+        console.log('Axios request to /devices/connected failed. Error:', error);
         return [];
     }
 }
@@ -159,37 +159,4 @@ export function getYesterday(): string {
     const month = String(yesterday.getMonth() + 1).padStart(2, '0');
     const day = String(yesterday.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-}
-
-import openai from 'openai';
-// @ts-ignore
-import { OPENAI_API_KEY } from '@env';
-
-async function getHealthInsights() {
-    for (const device of getDeviceInstancesArray()) {
-        if (device.is_connected) {
-            await device.fetchData();
-            const prompt = device.createPromptWithData();
-        }
-    }
-
-    try {
-        const response = await openai.Completion.create({
-            engine: 'davinci-codex',
-            prompt,
-            max_tokens: 150,
-            n: 1,
-            stop: null,
-            temperature: 0.5,
-        });
-
-        if (response && response.choices && response.choices.length > 0) {
-            return response.choices[0].text.trim();
-        } else {
-            throw new Error('No response from OpenAI API');
-        }
-    } catch (error) {
-        console.error('Error calling OpenAI API:', error);
-        return 'Failed to get health insights.';
-    }
 }
