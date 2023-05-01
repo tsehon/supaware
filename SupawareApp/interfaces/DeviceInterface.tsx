@@ -199,7 +199,7 @@ export async function fetchHealthInsights() {
     console.log('Prompt:', prompt);
 
     try {
-        const response = await axios.post('/openai/health-insights', {
+        const response = await axios.post('/openai/chat-completion', {
             prompt: prompt,
         });
 

@@ -6,10 +6,9 @@ const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
-console.log("Current OpenAI models: ", openai.listModels());
 
-router.post('/health-insights', async (req, res) => {
-    console.log("POST /openai/health-insights");
+router.post('/chat-completion', async (req, res) => {
+    console.log("POST /openai/chat-completion");
     const { prompt } = req.body;
 
     try {
@@ -17,8 +16,6 @@ router.post('/health-insights', async (req, res) => {
             model: "gpt-3.5-turbo",
             messages: [{ role: "user", content: prompt }],
         });
-
-        console.log("- Completion:\n", completion.data.choices[0].message.content);
 
         if (completion.status !== 200) {
             console.log("- Request incomplete, Status: ", completion.status);

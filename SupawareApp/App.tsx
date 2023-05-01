@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Linking } from 'react-native';
 import handleDeepLink from './logical_components/DeepLink';
 import AuthProvider from './contexts/AuthContext';
+import UpdateProvider from './contexts/UpdateContext';
 import AppNav from './pages/AppNav';
 
 const App: React.FC = () => {
@@ -26,7 +27,9 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <AppNav />
+      <UpdateProvider>
+        <AppNav />
+      </UpdateProvider>
     </AuthProvider>
   );
 };
