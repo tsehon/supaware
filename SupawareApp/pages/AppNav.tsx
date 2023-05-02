@@ -17,6 +17,7 @@ const Stack = createStackNavigator();
 
 // @ts-ignore
 import { API_URL } from '@env';
+import ChatPage from './ChatPage';
 axios.defaults.baseURL = API_URL;
 
 const AppNav: React.FC = () => {
@@ -37,6 +38,15 @@ const AppNav: React.FC = () => {
                         options={{
                             tabBarIcon: ({ focused }) => (
                                 <TabBarIcon focused={focused} iconName="home" />
+                            ),
+                        }}
+                    />
+                    <Tab.Screen
+                        name="Chat"
+                        component={ChatPage}
+                        options={{
+                            tabBarIcon: ({ focused }) => (
+                                <TabBarIcon focused={focused} iconName="message-square" />
                             ),
                         }}
                     />

@@ -144,23 +144,13 @@ export async function getConnectedDeviceArray(userToken: string | null): Promise
     }
 }
 
-export function getToday(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
 
-export function getYesterday(): string {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const year = yesterday.getFullYear();
-    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-    const day = String(yesterday.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
+import { useChatContext } from '../contexts/ChatContext';
+
+const sendMessage = (text: string) => {
+    const { addMessage } = useChatContext();
+    addMessage(text, false);
+};
 
 export async function fetchHealthInsights() {
     console.log('Fetching health insights...');
@@ -216,4 +206,25 @@ export async function fetchHealthInsights() {
 
 export function getHealthInsights(): string {
     return healthInsights;
+}
+
+export async function fetchWelcomeMessage() {
+    console.log('Fetching welcome message...');
+
+    const prompt = "You are a friendly doctor, and you patient has just entered the chat. " +
+        "Send a nice welcome message, conveying your care for their health and wellness. " +
+        "\n";
+
+    try {
+        const response = await axios.post('/openai/chat-completion', {
+            prompt: prompt,
+        });
+
+        if (response.data) {
+
+        }
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        return 'Failed to get health insights.';
+    }
 }

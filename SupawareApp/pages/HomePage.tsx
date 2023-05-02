@@ -18,7 +18,7 @@ const HomePage: React.FC = () => {
             const devices = getDeviceInstancesArray();
             setConnectedDevices(devices.filter((device) => device.is_connected));
             console.log("Updating devices: ", devices);
-            await fetchHealthInsights();
+            //await fetchHealthInsights();
         };
 
         if (userToken) {

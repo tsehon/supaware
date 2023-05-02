@@ -1,4 +1,5 @@
-import Device, { getToday, getYesterday } from "../../interfaces/DeviceInterface";
+import Device from "../../interfaces/DeviceInterface";
+import { getToday, getYesterday } from "../../logical_components/Date";
 
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
